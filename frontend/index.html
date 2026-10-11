@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AtlasChain — A commons of attested facts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --fg: #f2f2f5;
+    --muted: #8a8a95;
+    --dim: #5a5a63;
+    --hairline: #1e1e22;
+    --hairline-strong: #2a2a30;
+    --panel: #101012;
+    --panel-2: #141418;
+    --accent: #0080ff;
+    --accent-soft: rgba(0, 128, 255, 0.12);
+    --accent-hover: #1a8fff;
+    --amber: #f5a623;
+    --amber-soft: rgba(245, 166, 35, 0.12);
+    --danger: #ff5c5c;
+    --serif: "Instrument Serif", "Newsreader", Georgia, serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(1200px 800px at 50% -10%, rgba(0, 128, 255, 0.05), transparent 55%),
+      radial-gradient(900px 700px at 80% 100%, rgba(255, 255, 255, 0.02), transparent 60%);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-weight: 400;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: 140px 32px 120px;
+    text-align: center;
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+    margin: 0 auto;
+    max-width: 900px;
+  }
+  .hero .subhead {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 560px;
+    margin: 28px auto 44px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 22px;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: -0.005em;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.06s ease;
+    line-height: 1;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 4px 12px rgba(0, 128, 255, 0.25);
+  }
+  .btn-primary:hover { background: var(--accent-hover); color: #fff; }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--fg);
+    border-color: var(--hairline-strong);
+  }
+  .btn-secondary:hover { border-color: #3a3a42; background: rgba(255,255,255,0.02); }
+  .btn-small { padding: 7px 14px; font-size: 12px; }
+  .btn-amber {
+    background: transparent;
+    color: var(--amber);
+    border-color: rgba(245, 166, 35, 0.4);
+  }
+  .btn-amber:hover { background: var(--amber-soft); border-color: var(--amber); }
+
+  /* ---- Curator's Note ---- */
+  .curator {
+    padding: 100px 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 48px;
+    text-align: center;
+  }
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 56px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .principle .roman {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    margin-bottom: 20px;
+  }
+  .principle h3 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    margin: 0 0 12px;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+  }
+  .principle p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .divider { height: 1px; background: var(--hairline); margin: 0; }
+
+  /* ---- App topbar ---- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .wordmark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 24px;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+  }
+  .topnav { display: flex; align-items: center; gap: 28px; }
+  .topnav a {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .topnav a:hover { color: var(--fg); }
+
+  #appSection { padding-top: 64px; }
+
+  /* ---- Stats ---- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 72px;
+  }
+  .stat {
+    padding: 24px 28px;
+    border-right: 1px solid var(--hairline);
+  }
+  .stat:last-child { border-right: none; }
+  .stat .k {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .stat .v {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+  }
+  .stat .v.amber { color: var(--amber); }
+  .stat .v.blue { color: var(--accent); }
+
+  /* ---- Section headers ---- */
+  .section-head {
+    margin-bottom: 24px;
+  }
+  .section-head .kicker {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .section-head h2 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 34px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--fg);
+  }
+
+  /* ---- Form ---- */
+  .form {
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 32px;
+    margin-bottom: 72px;
+    background: var(--panel);
+  }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .field textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .helper {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+  .helper code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg);
+    background: var(--panel-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ---- Tabs ---- */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 18px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--fg); }
+  .tab.active { color: var(--fg); border-bottom-color: var(--accent); }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .toolbar select {
+    background: var(--panel);
+    border: 1px solid var(--hairline-strong);
+    padding: 8px 12px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--fg);
+    border-radius: 6px;
+    outline: none;
+  }
+
+  /* ---- Claim card ---- */
+  .claim-card {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .claim-card:first-child { border-top: 1px solid var(--hairline); }
+  .claim-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .claim-head .topic-line {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .claim-head .topic-line .sep { margin: 0 8px; opacity: 0.5; }
+  .claim-head .topic-line .acc { font-family: var(--mono); letter-spacing: 0.08em; text-transform: none; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .pill::before {
+    content: "";
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .pill.verified { color: var(--accent); background: var(--accent-soft); border-color: rgba(0,128,255,0.25); }
+  .pill.rejected { color: var(--muted); background: rgba(255,255,255,0.03); border-color: var(--hairline-strong); }
+  .pill.pending { color: var(--amber); background: var(--amber-soft); border-color: rgba(245,166,35,0.25); }
+  .pill.challenged { color: var(--amber); background: var(--amber-soft); border-color: rgba(245,166,35,0.25); }
+
+  .claim-text {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    margin: 0 0 18px;
+  }
+  .source {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    border-bottom: 1px solid rgba(0,128,255,0.3);
+    padding-bottom: 1px;
+    word-break: break-all;
+    max-width: 100%;
+  }
+  .source:hover { color: var(--accent-hover); border-bottom-color: var(--accent); }
+
+  .challenge-note {
+    margin: 20px 0 0;
+    padding: 14px 16px;
+    background: var(--amber-soft);
+    border-left: 2px solid var(--amber);
+    border-radius: 4px;
+  }
+  .challenge-note .cn-label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .challenge-note .cn-text {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+    color: var(--fg);
+    line-height: 1.5;
+  }
+
+  .tallies { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .tally {
+    padding: 14px 16px;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+  }
+  .tally .tk {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .tally .tv {
+    font-family: var(--serif);
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+  }
+  .tally.defend .tv { color: var(--accent); }
+  .tally.support .tv { color: var(--amber); }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .meta .who .addr { font-family: var(--mono); color: var(--fg); font-size: 12px; }
+  .meta .sep { margin: 0 8px; opacity: 0.5; }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .actions input[type="number"] {
+    background: var(--bg);
+    border: 1px solid var(--hairline-strong);
+    padding: 7px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg);
+    border-radius: 6px;
+    width: 140px;
+    outline: none;
+  }
+  .actions input[type="number"]:focus { border-color: var(--accent); }
+
+  .vote-panel {
+    margin-top: 16px;
+    padding: 20px;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+  .vote-panel .vp-label {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .vote-btns { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .vote-btns .btn { flex: 1; min-width: 160px; padding: 12px 18px; }
+  .btn-defend { background: var(--accent); color: #fff; border: 1px solid transparent; }
+  .btn-defend:hover { background: var(--accent-hover); }
+  .btn-support { background: transparent; color: var(--amber); border: 1px solid rgba(245,166,35,0.4); }
+  .btn-support:hover { background: var(--amber-soft); border-color: var(--amber); }
+
+  .voted-note {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .voted-note .yes { color: var(--accent); }
+  .voted-note .amt { font-family: var(--mono); color: var(--fg); }
+
+  /* ---- Empty ---- */
+  .empty {
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 20px;
+  }
+
+  /* ---- Modal ---- */
+  .modal-scrim {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-scrim.on { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    max-width: 520px;
+    width: 100%;
+    padding: 32px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  }
+  .modal h3 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    margin: 0 0 24px;
+  }
+  .modal .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* ---- Toast ---- */
+  .toast-tray {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column-reverse; gap: 10px;
+    z-index: 300;
+    max-width: 400px;
+    width: calc(100% - 32px);
+    pointer-events: none;
+  }
+  .toast {
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--hairline-strong);
+    color: var(--fg);
+    font-size: 13px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    animation: slideUp 0.2s ease;
+    display: flex; align-items: center; gap: 10px;
+    pointer-events: auto;
+  }
+  .toast::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .toast.ok::before { background: var(--accent); }
+  .toast.err::before { background: var(--danger); }
+  @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .hidden { display: none !important; }
+
+  footer {
+    padding: 80px 0 60px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 12px;
+    border-top: 1px solid var(--hairline);
+    margin-top: 100px;
+  }
+  footer .mono { font-family: var(--mono); }
+
+  @media (max-width: 780px) {
+    .container { padding: 0 20px; }
+    .topbar-inner { padding: 14px 20px; }
+    .topnav { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(2) { border-right: none; }
+    .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--hairline); }
+    .principles { grid-template-columns: 1fr; gap: 40px; }
+    .form { padding: 24px; }
+    .claim-text { font-size: 20px; }
+    .meta { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="eyebrow">AtlasChain · BOT Chain</div>
+  <h1>A commons of<br/>attested facts.</h1>
+  <p class="subhead">Claims are submitted with a deposit, opened to challenge, and settled by a jury of stakers. What survives enters the public registry.</p>
+  <a href="#appSection" class="btn btn-primary">Enter the atlas</a>
+</section>
+
+<div class="divider"></div>
+
+<!-- Curator's note -->
+<section class="curator">
+  <div class="container">
+    <div class="section-label">Three principles</div>
+    <div class="principles">
+      <div class="principle">
+        <div class="roman">I</div>
+        <h3>Attribution</h3>
+        <p>Every claim carries the address of its submitter and the URL that occasioned it. Nothing enters the registry unattributed.</p>
+      </div>
+      <div class="principle">
+        <div class="roman">II</div>
+        <h3>Adversarial review</h3>
+        <p>Any visitor may challenge a claim in its opening window. Disputes are settled by a jury of stakers whose weight is their deposit.</p>
+      </div>
+      <div class="principle">
+        <div class="roman">III</div>
+        <h3>Permanence</h3>
+        <p>Verified claims persist. Rejected ones are catalogued, not erased — the record includes its own dissent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- App -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="wordmark">atlaschain</div>
+    <nav class="topnav">
+      <a href="#appSection">Registry</a>
+      <a href="#submit">Submit</a>
+      <a href="#appSection">Docs</a>
+    </nav>
+    <button id="btnConnect" class="btn btn-primary">Connect wallet</button>
+  </div>
+</div>
+
+<section id="appSection">
+  <div class="container">
+
+    <div class="stats">
+      <div class="stat"><div class="k">Total claims</div><div class="v" id="stTotal">—</div></div>
+      <div class="stat"><div class="k">Verified</div><div class="v blue" id="stVerified">—</div></div>
+      <div class="stat"><div class="k">Under challenge</div><div class="v amber" id="stChal">—</div></div>
+      <div class="stat"><div class="k">Your stake</div><div class="v" id="stYours">—</div></div>
+    </div>
+
+    <div id="submit" class="section-head">
+      <div class="kicker">New submission</div>
+      <h2>Enter a claim into the record.</h2>
+    </div>
+
+    <div class="form">
+      <div class="field">
+        <label>Topic</label>
+        <input id="fTopic" maxlength="80" placeholder="Science, history, statistics…" />
+      </div>
+      <div class="field">
+        <label>Claim</label>
+        <textarea id="fClaim" maxlength="800" placeholder="State the fact plainly."></textarea>
+      </div>
+      <div class="field">
+        <label>Source URL</label>
+        <input id="fSource" maxlength="400" placeholder="https://…" />
+      </div>
+      <p class="helper">Submission deposit <code id="depAmount">0.005 BOT</code> — returned in full if the claim goes unchallenged.</p>
+      <button id="btnSubmit" class="btn btn-primary">Submit claim</button>
+    </div>
+
+    <div class="section-head">
+      <div class="kicker">The atlas</div>
+      <h2 id="tabTitle">The verified and the rejected.</h2>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="registry">Registry</button>
+      <button class="tab" data-tab="pending">Pending</button>
+      <button class="tab" data-tab="challenged">Under challenge</button>
+      <button class="tab" data-tab="mine">My contributions</button>
+    </div>
+
+    <div class="toolbar">
+      <div style="font-size:12px;color:var(--muted);">Filter by topic</div>
+      <select id="topicFilter"><option value="">All topics</option></select>
+    </div>
+
+    <div id="cardList"></div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <span class="mono" id="netLabel">BOT Chain Testnet</span> · contract <span class="mono" id="ctrLabel">0x0000…0000</span>
+  </div>
+</footer>
+
+<!-- Challenge modal -->
+<div class="modal-scrim" id="chalModal">
+  <div class="modal">
+    <h3>Challenge this claim</h3>
+    <div class="field">
+      <label>Reason (public record)</label>
+      <textarea id="chalReason" maxlength="400" placeholder="Explain, briefly, why this claim should not stand."></textarea>
+    </div>
+    <p class="helper">You must match the submitter's deposit: <code id="chalDep">0.005 BOT</code>.</p>
+    <div class="row">
+      <button class="btn btn-secondary" onclick="closeChal()">Cancel</button>
+      <button class="btn btn-amber" id="chalConfirm">Lodge challenge</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-tray" id="toastTray"></div>
+
+<script>
+/* ============================================================
+   NETWORK CONFIG — Default: TESTNET (chainId 968 / 0x3C8)
+   To switch to MAINNET, swap these five values in the NETWORK object:
+     chainIdHex: "0x2A5"
+     chainIdDec: 677
+     name:       "BOT Chain"
+     rpc:        "https://rpc.botchain.ai"
+     explorer:   "https://scan.botchain.ai"
+   (symbol stays "BOT")
+   ============================================================ */
+const NETWORK = {
+  chainIdHex: "0x3C8",              // TESTNET 968
+  chainIdDec: 968,
+  name: "BOT Chain Testnet",
+  rpc: "https://rpc.bohr.life",
+  explorer: "https://scan.bohr.life",
+  symbol: "BOT",
+};
+/*
+const NETWORK = {
+  chainIdHex: "0x2A5",              // MAINNET 677
+  chainIdDec: 677,
+  name: "BOT Chain",
+  rpc: "https://rpc.botchain.ai",
+  explorer: "https://scan.botchain.ai",
+  symbol: "BOT",
+};
+*/
+
+const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+const ABI = [
+  "function claimCount() view returns (uint256)",
+  "function submissionDeposit() view returns (uint256)",
+  "function challengeWindow() view returns (uint256)",
+  "function votingWindow() view returns (uint256)",
+  "function platformFeeBps() view returns (uint256)",
+  "function submitClaim(string,string,string) payable returns (uint256)",
+  "function challengeClaim(uint256,string) payable",
+  "function voteOnChallenge(uint256,bool) payable",
+  "function finalizeUnchallenged(uint256)",
+  "function resolveChallenge(uint256)",
+  "function claimStake(uint256)",
+  "function getClaim(uint256) view returns (address,string,string,string,uint256,uint8,address,string,uint256,uint256,uint256)",
+  "function getVoteInfo(uint256,address) view returns (bool,bool,uint256,bool)",
+  "function getRecent(uint256,uint256) view returns (uint256[])",
+  "function getDeposits(uint256) view returns (uint256,uint256)",
+  "event ClaimSubmitted(uint256 indexed,address indexed,bytes32 indexed,string,string,string,uint256)"
+];
+
+const STATUS = ["Pending", "Challenged", "Verified", "Rejected"];
+
+let provider, signer, contract, account;
+let subDeposit = 5000000000000000n;
+let chalWindow = 3n*86400n;
+let voteWindow = 3n*86400n;
+let currentTab = "registry";
+let topicFilter = "";
+let allClaims = [];
+let topicSet = new Set();
+
+document.getElementById("netLabel").textContent = NETWORK.name;
+document.getElementById("ctrLabel").textContent = CONTRACT_ADDRESS.slice(0,6) + "…" + CONTRACT_ADDRESS.slice(-4);
+
+/* ---------- toast ---------- */
+function toast(msg, kind) {
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = msg;
+  document.getElementById("toastTray").appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity 0.4s"; }, 3800);
+  setTimeout(() => el.remove(), 4400);
+}
+
+/* ---------- network + wallet ---------- */
+async function ensureNetwork() {
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: NETWORK.chainIdHex }],
+    });
+  } catch (e) {
+    if (e.code === 4902 || (e.data && e.data.originalError && e.data.originalError.code === 4902)) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: NETWORK.chainIdHex,
+          chainName: NETWORK.name,
+          rpcUrls: [NETWORK.rpc],
+          blockExplorerUrls: [NETWORK.explorer],
+          nativeCurrency: { name: NETWORK.symbol, symbol: NETWORK.symbol, decimals: 18 },
+        }],
+      });
+    } else { throw e; }
+  }
+}
+
+async function connect() {
+  if (!window.ethereum) { toast("MetaMask not detected", "err"); return; }
+  try {
+    await ensureNetwork();
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    account = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    document.getElementById("btnConnect").textContent = account.slice(0,6) + "…" + account.slice(-4);
+    await loadConfig();
+    await refresh();
+    toast("Wallet connected", "ok");
+  } catch (e) {
+    console.error(e);
+    toast(e.shortMessage || e.message || "Connect failed", "err");
+  }
+}
+
+async function loadConfig() {
+  try {
+    subDeposit = await contract.submissionDeposit();
+    chalWindow = await contract.challengeWindow();
+    voteWindow = await contract.votingWindow();
+    const eth = ethers.formatEther(subDeposit);
+    document.getElementById("depAmount").textContent = eth + " BOT";
+    document.getElementById("chalDep").textContent = eth + " BOT";
+  } catch (e) { /* ignore before contract set */ }
+}
+
+/* ---------- data ---------- */
+async function refresh() {
+  if (!contract) return;
+  try {
+    const count = Number(await contract.claimCount());
+    document.getElementById("stTotal").textContent = count;
+    const limit = Math.min(count, 60);
+    const ids = count === 0 ? [] : await contract.getRecent(count, limit);
+
+    allClaims = [];
+    let verified = 0, challenged = 0, yourStake = 0n;
+    topicSet = new Set();
+
+    for (const idBn of ids) {
+      const id = Number(idBn);
+      const c = await contract.getClaim(id);
+      const claim = {
+        id,
+        submitter: c[0],
+        topic: c[1],
+        text: c[2],
+        source: c[3],
+        submittedAt: c[4],
+        status: Number(c[5]),
+        challenger: c[6],
+        challengeReason: c[7],
+        challengedAt: c[8],
+        votesFor: c[9],
+        votesAgainst: c[10],
+      };
+      topicSet.add(claim.topic);
+      if (claim.status === 2) verified++;
+      if (claim.status === 1) challenged++;
+
+      if (account) {
+        try {
+          const vi = await contract.getVoteInfo(id, account);
+          claim.voted = vi[0]; claim.support = vi[1]; claim.voteStake = vi[2]; claim.voteClaimed = vi[3];
+          if (vi[0] && !vi[3]) yourStake += vi[2];
+          if (claim.submitter.toLowerCase() === account.toLowerCase() && claim.status === 0) yourStake += subDeposit;
+        } catch(_){}
+      }
+      allClaims.push(claim);
+    }
+
+    document.getElementById("stVerified").textContent = verified;
+    document.getElementById("stChal").textContent = challenged;
+    document.getElementById("stYours").textContent = ethers.formatEther(yourStake) + " BOT";
+
+    refreshTopicFilter();
+    render();
+  } catch (e) {
+    console.error(e);
+    toast("Load failed: " + (e.shortMessage || e.message), "err");
+  }
+}
+
+function refreshTopicFilter() {
+  const sel = document.getElementById("topicFilter");
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All topics</option>';
+  Array.from(topicSet).sort().forEach(t => {
+    const o = document.createElement("option");
+    o.value = t; o.textContent = t;
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+/* ---------- render helpers ---------- */
+function fmtAddr(a) { return a.slice(0,6) + "…" + a.slice(-4); }
+function acc(id) { return "AC-" + String(id).padStart(5, "0"); }
+
+function relTime(ts) {
+  const now = Math.floor(Date.now() / 1000);
+  const d = now - Number(ts);
+  if (d < 0) return "just now";
+  if (d < 60) return d + "s ago";
+  if (d < 3600) return Math.floor(d/60) + "m ago";
+  if (d < 86400) return Math.floor(d/3600) + "h ago";
+  if (d < 86400*30) return Math.floor(d/86400) + "d ago";
+  if (d < 86400*365) return Math.floor(d/(86400*30)) + "mo ago";
+  return Math.floor(d/(86400*365)) + "y ago";
+}
+function relFuture(ts) {
+  const now = Math.floor(Date.now() / 1000);
+  const d = Number(ts) - now;
+  if (d <= 0) return "now";
+  if (d < 3600) return "in " + Math.floor(d/60) + "m";
+  if (d < 86400) return "in " + Math.floor(d/3600) + "h";
+  return "in " + Math.floor(d/86400) + "d";
+}
+
+function pill(status) {
+  if (status === 0) return `<span class="pill pending">Pending</span>`;
+  if (status === 1) return `<span class="pill challenged">Under challenge</span>`;
+  if (status === 2) return `<span class="pill verified">Verified</span>`;
+  return `<span class="pill rejected">Rejected</span>`;
+}
+
+function render() {
+  const list = document.getElementById("cardList");
+  const tabTitle = document.getElementById("tabTitle");
+  const now = BigInt(Math.floor(Date.now() / 1000));
+
+  let items = allClaims.slice();
+  if (topicFilter) items = items.filter(c => c.topic === topicFilter);
+
+  if (currentTab === "registry") {
+    tabTitle.textContent = "The verified and the rejected.";
+    items = items.filter(c => c.status === 2 || c.status === 3);
+  } else if (currentTab === "pending") {
+    tabTitle.textContent = "In the challenge window.";
+    items = items.filter(c => c.status === 0);
+  } else if (currentTab === "challenged") {
+    tabTitle.textContent = "Awaiting adjudication.";
+    items = items.filter(c => c.status === 1);
+  } else if (currentTab === "mine") {
+    tabTitle.textContent = "My contributions.";
+    if (!account) { items = []; }
+    else {
+      const me = account.toLowerCase();
+      items = items.filter(c =>
+        c.submitter.toLowerCase() === me ||
+        (c.challenger && c.challenger.toLowerCase() === me) ||
+        c.voted
+      );
+    }
+  }
+
+  if (items.length === 0) {
+    list.innerHTML = `<div class="empty">The atlas is quiet here — no records to display.</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(c => renderCard(c, now)).join("");
+}
+
+function renderCard(c, now) {
+  const chalDeadline = c.submittedAt + chalWindow;
+  const voteDeadline = c.challengedAt + voteWindow;
+  const me = account ? account.toLowerCase() : "";
+  const isSub = me && c.submitter.toLowerCase() === me;
+  const isChl = me && c.challenger && c.challenger.toLowerCase() === me;
+
+  let actions = "";
+  let votePanel = "";
+
+  if (c.status === 0) {
+    if (now <= chalDeadline) {
+      if (!isSub && account) {
+        actions += `<button class="btn btn-amber btn-small" onclick="openChal(${c.id})">Challenge</button>`;
+      }
+      actions += `<span style="font-size:12px;color:var(--muted);">Window closes ${relFuture(chalDeadline)}</span>`;
+    } else {
+      actions += `<button class="btn btn-secondary btn-small" onclick="doFinalize(${c.id})">Finalize (permissionless)</button>`;
+    }
+  } else if (c.status === 1) {
+    if (now <= voteDeadline) {
+      if (account && !isSub && !isChl && !c.voted) {
+        votePanel = `
+          <div class="vote-panel">
+            <div class="vp-label">Cast your vote</div>
+            <input type="number" step="0.001" min="0.001" placeholder="Stake in BOT" id="stake-${c.id}" style="width:100%;background:var(--bg);border:1px solid var(--hairline-strong);padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--fg);border-radius:6px;outline:none;" />
+            <div class="vote-btns">
+              <button class="btn btn-defend" onclick="doVote(${c.id}, false)">Defend claim</button>
+              <button class="btn btn-support" onclick="doVote(${c.id}, true)">Support challenge</button>
+            </div>
+          </div>`;
+      } else if (c.voted) {
+        actions += `<span class="voted-note">You <span class="yes">${c.support ? "supported the challenge" : "defended the claim"}</span> with <span class="amt">${ethers.formatEther(c.voteStake)} BOT</span></span>`;
+      }
+      actions += `<span style="font-size:12px;color:var(--muted);margin-left:auto;">Voting closes ${relFuture(voteDeadline)}</span>`;
+    } else {
+      actions += `<button class="btn btn-secondary btn-small" onclick="doResolve(${c.id})">Resolve (permissionless)</button>`;
+    }
+  } else {
+    if (account) {
+      const iVoted = c.voted && !c.voteClaimed;
+      const iWon = iVoted && ((c.status === 3 && c.support) || (c.status === 2 && !c.support));
+      const shouldOffer =
+        (isSub && c.status === 2) ||
+        (isChl && c.status === 3) ||
+        iWon ||
+        (iVoted && !iWon);
+      if (shouldOffer) {
+        actions += `<button class="btn btn-primary btn-small" onclick="doClaimPayout(${c.id})">Claim payout</button>`;
+      }
+    }
+  }
+
+  let challengeBlock = "";
+  if ((c.status === 1 || c.status === 2 || c.status === 3) && c.challenger && c.challenger !== ethers.ZeroAddress) {
+    challengeBlock = `
+      <div class="challenge-note">
+        <span class="cn-label">Challenge by ${fmtAddr(c.challenger)}</span>
+        <span class="cn-text">"${escapeHtml(c.challengeReason)}"</span>
+      </div>`;
+    if (c.status === 1) {
+      challengeBlock += `
+        <div class="tallies">
+          <div class="tally defend"><span class="tk">Defending the claim</span><span class="tv">${ethers.formatEther(c.votesAgainst)} BOT</span></div>
+          <div class="tally support"><span class="tk">Supporting the challenge</span><span class="tv">${ethers.formatEther(c.votesFor)} BOT</span></div>
+        </div>`;
+    }
+  }
+
+  return `
+    <div class="claim-card">
+      <div class="claim-head">
+        <div class="topic-line">
+          ${escapeHtml(c.topic)}<span class="sep">·</span><span class="acc">${acc(c.id)}</span>
+        </div>
+        ${pill(c.status)}
+      </div>
+      <div class="claim-text">${escapeHtml(c.text)}</div>
+      <a class="source" href="${escapeAttr(c.source)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.source)}</a>
+      ${challengeBlock}
+      ${votePanel}
+      <div class="meta">
+        <div class="who">Submitted by <span class="addr">${fmtAddr(c.submitter)}</span><span class="sep">·</span>${relTime(c.submittedAt)}</div>
+      </div>
+      ${actions ? `<div class="actions">${actions}</div>` : ""}
+    </div>`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+/* ---------- actions ---------- */
+async function needConn() {
+  if (!contract) { await connect(); }
+  return !!contract;
+}
+
+async function doSubmit() {
+  if (!await needConn()) return;
+  const topic = document.getElementById("fTopic").value.trim();
+  const claim = document.getElementById("fClaim").value.trim();
+  const src   = document.getElementById("fSource").value.trim();
+  if (!topic || !claim || !src) { toast("All fields required", "err"); return; }
+  try {
+    const tx = await contract.submitClaim(topic, claim, src, { value: subDeposit });
+    toast("Submitting…");
+    await tx.wait();
+    toast("Claim submitted", "ok");
+    document.getElementById("fTopic").value = "";
+    document.getElementById("fClaim").value = "";
+    document.getElementById("fSource").value = "";
+    await refresh();
+  } catch (e) { toast(e.shortMessage || e.message, "err"); }
+}
+
+let chalTarget = null;
+function openChal(id) { chalTarget = id; document.getElementById("chalReason").value = ""; document.getElementById("chalModal").classList.add("on"); }
+function closeChal() { document.getElementById("chalModal").classList.remove("on"); }
+
+async function confirmChal() {
+  if (chalTarget == null) return;
+  if (!await needConn()) return;
+  const reason = document.getElementById("chalReason").value.trim();
+  if (!reason) { toast("Reason required", "err"); return; }
+  try {
+    const dep = await contract.getDeposits(chalTarget);
+    const tx = await contract.challengeClaim(chalTarget, reason, { value: dep[0] });
+    toast("Lodging challenge…");
+    await tx.wait();
+    toast("Challenge lodged", "ok");
+    closeChal();
+    await refresh();
+  } catch (e) { toast(e.shortMessage || e.message, "err"); }
+}
+
+async function doVote(id, support) {
+  if (!await needConn()) return;
+  const raw = document.getElementById("stake-" + id).value.trim();
+  if (!raw || Number(raw) <= 0) { toast("Enter a stake > 0", "err"); return; }
+  try {
+    const value = ethers.parseEther(raw);
+    const tx = await contract.voteOnChallenge(id, support, { value });
+    toast("Casting vote…");
+    await tx.wait();
+    toast("Vote recorded", "ok");
+    await refresh();
+  } catch (e) { toast(e.shortMessage || e.message, "err"); }
+}
+
+async function doFinalize(id) {
+  if (!await needConn()) return;
+  try {
+    const tx = await contract.finalizeUnchallenged(id);
+    toast("Finalizing…");
+    await tx.wait();
+    toast("Claim verified", "ok");
+    await refresh();
+  } catch (e) { toast(e.shortMessage || e.message, "err"); }
+}
+
+async function doResolve(id) {
+  if (!await needConn()) return;
+  try {
+    const tx = await contract.resolveChallenge(id);
+    toast("Resolving…");
+    await tx.wait();
+    toast("Challenge resolved", "ok");
+    await refresh();
+  } catch (e) { toast(e.shortMessage || e.message, "err"); }
+}
+
+async function doClaimPayout(id) {
+  if (!await needConn()) return;
+  try {
+    const tx = await contract.claimStake(id);
+    toast("Claiming…");
+    await tx.wait();
+    toast("Payout received", "ok");
+    await refresh();
+  } catch (e) { toast(e.shortMessage || e.message, "err"); }
+}
+
+/* ---------- bindings ---------- */
+document.getElementById("btnConnect").addEventListener("click", connect);
+document.getElementById("btnSubmit").addEventListener("click", doSubmit);
+document.getElementById("chalConfirm").addEventListener("click", confirmChal);
+document.getElementById("topicFilter").addEventListener("change", e => { topicFilter = e.target.value; render(); });
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+  currentTab = t.dataset.tab;
+  render();
+}));
+
+if (window.ethereum) {
+  window.ethereum.on && window.ethereum.on("accountsChanged", () => location.reload());
+  window.ethereum.on && window.ethereum.on("chainChanged", () => location.reload());
+}
+</script>
+</body>
+</html>
